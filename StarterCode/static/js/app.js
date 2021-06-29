@@ -4,26 +4,26 @@ function innit() {
     d3.json("data/samples.json").then((importedData) => {
         console.log(importedData);
 
-        // Filter the imported data to extract sample names
+        // Filter the imported data to extract subject ID No's
         var sampleNames = importedData.names;
         console.log(sampleNames);
 
         // Set dropdown menu location
         dropdownMenu = d3.select("#selDataset");
 
-        // Append sample name values to the dropdown menu
+        // Append subject ID No. values to the dropdown menu
         sampleNames.forEach((name) => {
         dropdownMenu.append("option").text(name).property("value", name);
         })
         
-        //  Run the initial metadata and chart function
+        //  Run the buildmetadata and buildchart functions
         buildMetadata(sampleNames[0])
         buildChart(sampleNames[0])
     });
 }
 
 
-// Define function to build metadata for each sample from samples.json file
+// Define function to build Demographic Info from metadata for each subject in the samples.json file
 function buildMetadata(subject) {
     console.log(subject)
     // Use D3 to read the samples.json file
@@ -33,7 +33,7 @@ function buildMetadata(subject) {
         var metaData = importedData.metadata;
         console.log(metaData);
 
-        // Filter the metadata for chosen subject
+        // Filter the metadata for selected subject
         var subjectMetadata = metaData.filter(object => object.id == subject);
         console.log(subjectMetadata[0])
 
@@ -43,7 +43,7 @@ function buildMetadata(subject) {
         // Clear any previous metadata
         metadataPanel.html("")
 
-        // Append metadata for sample into the selected panel
+        // Append metadata for selected subject into the selected panel
         Object.entries(subjectMetadata[0]).forEach(([key, value]) => { 
         metadataPanel.append("h5").text(`${key}: ${value}`);
         });
@@ -61,37 +61,37 @@ function buildChart(subject) {
         var samples = importedData.samples;
         console.log(samples)
 
-        // Filter the samples array for results of the selected sample
+        // Filter the samples array for results of the selected subject
         filterResult = samples.filter(sampleObject => sampleObject.id == subject)[0]
         console.log(filterResult)
+       
+        // Define otu sample values of the selected subject
+        var sample_values = filterResult.sample_values
+        console.log(sample_values)
 
-        //  Define otu ids
+        //  Define otu ids of the selected subject
         var otu_ids = filterResult.otu_ids
         console.log(otu_ids)
         
-        // Define otu sample values
-        var sample_values = filterResult.sample_values
-        console.log(sample_values)
-        
-        // Define  otu labels
+        // Define otu labels of the selected subject
         var otu_labels = filterResult.otu_labels
         console.log(otu_labels)
     
        
         // BAR CHART //
-        // Slice the first 10 sample values for plotting and reverse their order
+        // Slice the first 10 sample values of selected subject for plotting and reverse their order
         barchartValues = sample_values.slice(0, 10).reverse();
         console.log(barchartValues);
 
-        // Slice the first 10 otu ids for plotting and reverse their order
-        barchartLabels = otu_ids.slice(0, 10);
+        // Slice the first 10 otu ids of selected subject for plotting and reverse their order
+        barchartLabels = otu_ids.slice(0, 10).reverse();
         console.log(barchartLabels);
         
         // Format barchart labels
         barchartformatLabels = barchartLabels.map(label => "OTU " + label);
         console.log(barchartformatLabels);
 
-        // Slice the first 10 otu labels for plotting and reverse their order
+        // Slice the first 10 otu labels of selected subject for plotting and reverse their order
         barchartHovertext = otu_labels.slice(0, 10).reverse();
         console.log(barchartHovertext);
 
@@ -163,7 +163,7 @@ function buildChart(subject) {
             }
         };
 
-        // Render the bar chart plot to the div tag with id "bubble"
+        // Render the bubble chart plot to the div tag with id "bubble"
         Plotly.newPlot("bubble", bubblechartData, bubbleLayout);
 
 
@@ -172,11 +172,11 @@ function buildChart(subject) {
         var metaData = importedData.metadata;
         console.log(metaData);
 
-        // Filter the metadata for chosen subject
+        // Filter the metadata for selected subject
         var subjectMetadata = metaData.filter(object => object.id == subject);
         console.log(subjectMetadata[0])
 
-        // Define washing frequency
+        // Define washing frequency of selected subject
         var washingFrequency = subjectMetadata[0].wfreq;
         console.log(washingFrequency)
 
@@ -190,8 +190,8 @@ function buildChart(subject) {
             gauge: {
                 axis: {
                     range: [0, 9],
-                    ticktext: ['0-1','1-2','2-3','3-4','4-5','5-6','6-7','7-8','8-9'],
-                    tickvals: [0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5]                  
+                    ticktext: ['0','1','2','3','4','5','6','7','8', '9'],
+                    tickvals: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]                
                 },            
                 steps: [
                     { range: [0, 1], color: "#f8f3ec"},
@@ -202,25 +202,25 @@ function buildChart(subject) {
                     { range: [5, 6], color: "#b7cd8f"},
                     { range: [6, 7], color: "#8bc086"},
                     { range: [7, 8], color: "#89bc8d"},
-                    { range: [8, 9], color: "#84b589" },
+                    { range: [8, 9], color: "#84b589"},
                 ],
                 bar: {thickness: 0}
             },                    
         };
             
-        // Create needle
+        // Create needle for gauge chart
         // Angle of each washing frequency segment on chart
         var angle = (washingFrequency / 9) * 180;
 
         // Set the end point of needle
         var degrees = 180 - angle;
-            radius = .75;
+        var radius = .75;
         var radians = degrees * Math.PI / 180;
         var x = radius * Math.cos(radians);
         var y = radius * Math.sin(radians);
 
-        
-        var mainPath = 'M -.0 -0.025 L .0 0.025 L ',
+        // Set the needle shape
+        var mainPath = 'M -0.0 -0.025 L 0.0 0.025 L ',
             pathX = String(x),
             pathY = String(y),
             pathEnd = ' Z';
@@ -239,10 +239,10 @@ function buildChart(subject) {
             hoverinfo: 'name'
         };
 
-        // Set data variable from trace for guage and needle for guage chart
+        // Set data variable for guage chart from guage and needle trace 
         var guagechartData = [guageTrace, needleTrace];
 
-        // Set layout for bar chart
+        // Set layout for gauge chart
         var guageLayout = {
             margin: {
                 l: 30,
@@ -279,7 +279,7 @@ function buildChart(subject) {
 }
 
 
-//  Define function to change metadata and charts on change of the dropdown menu
+//  Define function to change metadata and charts for selected subject on change of the dropdown menu
 function optionChanged(newsubject) {
     buildMetadata(newsubject);
     buildChart(newsubject);
